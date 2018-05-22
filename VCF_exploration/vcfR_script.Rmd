@@ -1,0 +1,87 @@
+---  
+title: "VCF Exploration and Visualization"  
+author: "mattsada"  
+date: "`r format(Sys.Date())`"
+output: github_document
+keep_md: true
+message: FALSE
+warnings: FALSE
+---  
+# VCF Exploration and Visualization using vcfR package.
+Facilitates easy manipulation of variant call format (VCF) data. Functions are provided to rapidly read from and write to VCF files. Once VCF data is read into R a parser function extracts matrices of data. This information can then be used for quality control or other purposes. Additional functions provide visualization of genomic data. Once processing is complete data may be written to a VCF file (*.vcf.gz). It also may be converted into other popular R objects (e.g., genlight, DNAbin). VcfR provides a link between VCF data and familiar R software.
+
+## 1.1 Data Input 
+First, let's load package (uncomment to install). The vcfR package is designed to work with data from VCF files. The use of a sequence file (FASTA format) and an annotation file (GFF format) can provide helpful context, but are not required. 
+```{r}
+#install.packages('vcfR')
+suppressWarnings(suppressMessages(library(vcfR)))
+suppressWarnings(suppressMessages(library(dplyr)))
+suppressWarnings(suppressMessages(library(stringr)))
+suppressWarnings(suppressMessages(library(tidyverse)))
+suppressWarnings(suppressMessages(library(ape)))
+```
+
+The function read.vcfR() takes the filename you specify and reads it into R where it is stored as a vcfR object. The vcfR object is an S4 class object with three slots containing the metadata, the fixed data and the genotype data. More information on VCF data can be found in the vignette ‘vcf data.’ This object provides a known organization for the data so that downstream functions can easily access it.
+```{r}
+chr1_vcf <- read.vcfR(file = "../VCF_exploration/VCF_files/chr1_phased.vcf", verbose = FALSE)
+chr1_vcf <- na.omit(chr1_vcf)
+```
+
+Genomic reference sequence files are typically in FASTA format files. These can be read in using the package ape.
+```{r}
+chr1_ref <- ape::read.dna(file = "../VCF_exploration/ref_seq/chr1.fa", format = "fasta")
+chr1_ref <- na.omit(chr1_ref)
+```
+
+Annotation files (we currently support GFF), files which contain coordinates for annotations such as start and end points of genes, are tabular and can be read in with typical R functions.
+```{r}
+gff <- read.table(file = "annotation_GFF/GRCh38_latest_genomic.gff", sep="\t", quote="")
+```
+
+Filter .GFF file to only include chromosome 1 and rename column to match data.
+```{r}
+chr1_gff <- gff %>%
+  filter(str_detect(V1,"NC_000001.11"))
+levels(chr1_gff$V1) <- gsub("NC_000001.11", "chr1", levels(chr1_gff$V1), fixed=TRUE)
+chr1_gff <- na.omit(chr1_gff)
+rm(gff)
+chr1_gff <- as.data.frame(chr1_gff)
+```
+
+## 1.2 Data Exploration
+Using the R package vcfR, we can read VCF format files into memory using the function read.vcfR(). Once in memory we can use the head() method to summarize the information in the three VCF regions.
+```{r}
+head(chr1_vcf)
+```
+### The Meta Region
+The meta region contains information about the file, its creation, as well as information to interpret abbreviations used elsewhere in the file. Each line of the meta region begins with a double pound sign (‘##’). The example which comes with vcfR is shown below. (Only the first 10 lines are shown for brevity.)
+```{r}
+strwrap(chr1_vcf@meta[1:7])
+```
+
+The first line contains the version of the VCF format used in the file. This line is required. The second line specifies the software which created the VCF file. This is not required, so not all VCF files include it. When they do, the file becomes self documenting. Note that the alignment software is not included here because it was used upstream of the VCF file’s creation (aligners typically create .SAM or .BAM format files). Because the file can only include information about the software that created it, the entire pipeline does not get documented. Some VCF files may contain a line for every chromosome (or supercontig or contig depending on your genome), so they may become rather long. Here, the remaining lines contain INFO and FORMAT specifications which define abbreviations used in the fix and gt portions of the file.
+
+### The fix region
+The fix region contains information for each variant which is sometimes summarized over all samples. The first eight columns of the fixed region and are titled CHROM, POS, ID, REF, ALT, QUAL, FILTER and INFO. This is per variant information which is ‘fixed’, or the same, over all samples. The first two columns indicate the location of the variant by chromosome and position within that chromosome. Here, the ID field has not been used, so it consists of missing data (NA). The REF and ALT columns indicate the reference and alternate allelic states. When multiple alternate allelic states are present they are delimited with commas. The QUAL column attempts to summarize the quality of each variant over all samples. The FILTER field is not used here but could contain information on whether a variant has passed some form of quality assessment.
+```{r}
+head(getFIX(chr1_vcf))
+```
+
+### The gt region
+The gt (genotype) region contains information about each variant for each sample. The values for each variant and each sample are colon delimited. Multiple types of data for each genotype may be stored in this manner. The format of the data is specified by the FORMAT column (column nine). Here we see that we have information for GT, AD, DP, GQ and PL. The definition of these acronyms can be referenced by querying the the meta region, as demonstrated previously. Every variant does not necessarily have the same information (e.g., SNPs and indels may be handled differently), so the rows are best treated independently. Different variant callers may include different information in this region.
+```{r}
+head(chr1_vcf@gt)
+```
+
+## 2. Creating chromR objects
+Once the data are in memory we can use it to create a chromR object with the function create.chromR(). The  create.chromR() function creates a new chromR object and populates it with data you provided it.
+```{r}
+vcfR_chr1 <- create.chromR(name='Chromosome 1', vcf=chr1_vcf, seq=chr1_ref, ann=chr1_gff)
+vcfR_chr1
+```
+
+## 3. Processing chromR objects
+Once the chromR object has been created a few processing steps are needed. First, you may want to get a quick look at some of your data. This can be done with the plot function.
+```{r}
+plot(vcfR_chr1)
+```
