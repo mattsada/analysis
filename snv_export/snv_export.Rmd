@@ -1,0 +1,54 @@
+---  
+title: "Export single nucleotide variants (SNV) and chr posistion from .vcf for further analysis with StrandPhaseR"  
+author: "mattsada"  
+date: "`r format(Sys.Date())`"
+output: github_document
+keep_md: true
+message: FALSE
+warnings: FALSE
+--- 
+```{r}
+#load library
+library(dplyr)
+library(vcfR)
+
+#user defined variables
+input = "/Users/mattsada/Desktop/chr1_phased_HG00514.vcf"
+output = "/Users/mattsada/Desktop/chr1_phased_HG00514_snv_list.txt"
+FIXregion = "/Users/mattsada/Desktop/chr1_phased_HG00514_FIX.txt"
+
+#read vcf file
+vcf <- read.vcfR(file = input, 
+                 verbose = FALSE)
+
+#export FIX region
+vcfFIX = getFIX(vcf)
+
+#write FIX region as seperate output
+write.table(vcfFIX, 
+            file = FIXregion, 
+            quote = FALSE, 
+            sep = "\t")
+
+#read FIX region into a new object
+vcfFIXup = read.table(FIXregion, 
+                      sep = "\t", 
+                      header = TRUE)
+
+#select "chr" and "POS" from vcf file and store as new object
+snvlistFilter = vcfFIXup %>% 
+  select(CHROM, POS)
+
+#export filtered .vcf file as .txt format
+write.table(snvlistFilter, 
+            output, 
+            sep = "\t", 
+            quote = FALSE, 
+            row.names = FALSE, 
+            col.names = FALSE)
+
+#clean enviroment
+rm(input, output, FIXregion, vcf, vcfFIX, vcfFIXup, snvlistFilter)
+```
+
+
