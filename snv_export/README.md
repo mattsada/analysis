@@ -15,7 +15,7 @@ Custom [script](https://github.com/mattsada/analysis/blob/master/snv_export/snv_
 **FIXregion** - Path to output .txt file (FIX region of initial VCF input).
 
 # VCFtools .sh script
-Custom [script](https://github.com/mattsada/analysis/blob/master/snv_export/vcfTools.sh) using [VCFtools](https://vcftools.github.io/man_latest.html) to filter out SV with quality > 200 (HGSV paper).
+Custom [script](https://github.com/mattsada/analysis/blob/master/snv_export/vcfTools.sh) using [VCFtools](https://vcftools.github.io/man_latest.html) to filter out SV with quality < 200 (HGSV paper).
 
 # Bioconductor rtracklayer 
 Optional [script]() for lifting coordinates from one version of the reference genome to another.
