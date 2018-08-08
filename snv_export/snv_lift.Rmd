@@ -58,6 +58,7 @@ write.table(liftedSNV,
             quote = FALSE, 
             row.names = FALSE, 
             col.names = FALSE)
+rm(input, bedFile, liftedBed, output, liftedSNV, snv)
 ```
 
 
