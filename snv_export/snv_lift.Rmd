@@ -1,0 +1,63 @@
+---  
+title: "Reformat snv positions, prepair for liftOver and prepair/reformatting file for StrandPhaseR/output"  
+author: "mattsada"  
+date: "`r format(Sys.Date())`"
+output: github_document
+keep_md: true
+message: FALSE
+warnings: FALSE
+--- 
+```{r}
+#load packages
+library(stringr)
+
+#user defined variables
+input = "/home/mattsada/Desktop/VCFanalysis/GATK/snv_pos_A64802_1_lane_dupsFlagged.txt"
+bedFile = "/home/mattsada/Desktop/VCFanalysis/GATK/snv_pos_A64802_1_lane_dupsFlagged.bed"
+liftedBed = "/home/mattsada/Desktop/VCFanalysis/GATK/hglft_genome_64dc_b45010.bed"
+output = "/home/mattsada/Desktop/VCFanalysis/GATK/snv_A64802.txt"
+
+snv = read.table(input, sep = "\t")
+
+#duplicate V2 column
+snv$V3 = snv$V2
+
+#paste "chr" prefic in V1 and format V2/V3
+snv$V1 = paste0("chr", snv$V1)
+snv$V3 = paste0("-", snv$V3)
+snv$V2 = paste0(":", snv$V2)
+
+#joining columns (V1, V2, V3) into new column
+snv$V4 <- paste(snv$V1, snv$V2, snv$V3)
+snv$V4 <- gsub('\\s+', '', snv$V4)
+
+#write reformatted VCF file to new bed file for liftOver using USCS "Lift Genome Annotations"
+write.table(snv$V4, 
+            sep = "", 
+            bedFile, 
+            quote = FALSE, 
+            row.names = FALSE, 
+            col.names = FALSE)
+
+#read lifted snv posistion bed file
+liftedSNV = read.table(liftedBed, sep = ":")
+
+#remove end pos of region
+liftedSNV$V2 = gsub("-.*", 
+                    "", 
+                    liftedSNV$V2)
+
+#remove "chr" prefix
+liftedSNV$V1 = gsub("chr", 
+                    "", 
+                    liftedSNV$V1)
+
+#output complete list of all called SNV's. File ready for StrandPhaseR analysis
+write.table(liftedSNV, 
+            output, 
+            quote = FALSE, 
+            row.names = FALSE, 
+            col.names = FALSE)
+```
+
+
