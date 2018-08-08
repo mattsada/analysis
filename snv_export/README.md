@@ -17,5 +17,6 @@ Custom [script](https://github.com/mattsada/analysis/blob/master/snv_export/snv_
 # VCFtools .sh script
 Custom [script](https://github.com/mattsada/analysis/blob/master/snv_export/vcfTools.sh) using [VCFtools](https://vcftools.github.io/man_latest.html) to filter out SV with quality < 200 (HGSV paper).
 
-# NCBI Genome Remapping Service
-[NCBI Remap](https://www.ncbi.nlm.nih.gov/genome/tools/remap) is a tool that allows users to project annotation data from one coordinate system to another. This remapping (sometimes called 'liftover') uses genomic alignments to project features from one sequence to the other. For each feature on the source sequence, we perform a base-by-base analysis of each feature on the source sequence in order to project the feature through the alignment to the new sequence.
+# Lift Genome Annotations
+[Lift Genome Annotations] converts genome coordinates and genome annotation files between assemblies.  The input data can be pasted into the text box, or uploaded from a file.  If a pair of assemblies cannot be selected from the pull-down menus, a direct lift between them is unavailable.  However, a sequential lift may be possible.  Example: lift from Mouse, May 2004, to Mouse, Feb. 2006, and then from Mouse, Feb. 2006 to Mouse, July 2007 to achieve a lift from mm5 to mm9.  
+
