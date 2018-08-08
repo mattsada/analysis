@@ -4,7 +4,7 @@ author: "mattsada"
 date: "August 8, 2018"
 output: html_document
 ---
-#Single Nucleotide Variants extraction
+# Single Nucleotide Variants extraction
 Custom script that exrtacts information from the FIX region in any Variant Call Format (VCF) file, filters columns (CHROM and POS) and output complete list of Single Nucleotide Variants (SNV) as .txt file. Filtered VCF file could be used as input for [StrandPhaseR](https://github.com/mattsada/project/tree/master/groningen_StrandSeq) analysis, wich requires for each sample a complete list of SNV's cordinates throughout the genomic landscape. 
 
 #### User defined variables are:
